@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Expense</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount ($)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ date.today() }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Category</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">Select a category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Add Expense
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

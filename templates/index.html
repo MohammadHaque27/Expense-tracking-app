@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly Overview</h5>
+                <span class="badge bg-primary fs-6">${{ "%.2f"|format(monthly_total) }}</span>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Expenses</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_expenses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expense in recent_expenses %}
+                                <tr>
+                                    <td>{{ expense.date.strftime('%m/%d/%Y') }}</td>
+                                    <td>{{ expense.description }}</td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ expense.category.color }}">
+                                            {{ expense.category.name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">${{ "%.2f"|format(expense.amount) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('expenses') }}" class="btn btn-outline-primary">View All Expenses</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No expenses recorded yet.</p>
+                        <a href="{{ url_for('add_expense') }}" class="btn btn-primary">Add Your First Expense</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Category Breakdown</h5>
+            </div>
+            <div class="card-body">
+                {% if category_totals %}
+                    <canvas id="categoryChart" height="200"></canvas>
+                    <div class="mt-3">
+                        {% for category, color, total in category_totals %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge me-2" style="background-color: {{ color }}">{{ category }}</span>
+                            </div>
+                            <span class="fw-bold">${{ "%.2f"|format(total) }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No data to display</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Quick Add</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('add_expense') }}" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-plus me-2"></i>Add New Expense
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Category Chart Data
+    const categoryData = {{ category_totals | tojson }};
+    
+    if (categoryData && categoryData.length > 0) {
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryData.map(item => item[0]),
+                datasets: [{
+                    data: categoryData.map(item => item[2]),
+                    backgroundColor: categoryData.map(item => item[1]),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // Load monthly chart data
+    fetch('/api/monthly_data')
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const ctx = document.getElementById('monthlyChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(item => item.month),
+                        datasets: [{
+                            label: 'Monthly Expenses',
+                            data: data.map(item => item.total),
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+</script>
+{% endblock %}

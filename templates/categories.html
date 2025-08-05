@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Expense Categories</h5>
+            </div>
+            <div class="card-body">
+                {% if categories %}
+                    <div class="row">
+                        {% for category in categories %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div class="category-color-circle" style="background-color: {{ category.color }}"></div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ category.name }}</h6>
+                                        <small class="text-muted">{{ category.expenses|length }} expenses</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No categories found.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add Category</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_category') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <input type="color" class="form-control form-control-color" id="color" name="color" value="#007bff">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Add Category
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
